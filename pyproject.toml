@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "playwright-stream-monitor"
+version = "1.0.0"
+description = "A lightweight utility pattern to track, measure, and validate Server-Sent Events (SSE) and streaming LLM responses in Playwright test suites."
+readme = "README.md"
+requires-python = ">=3.8"
+authors = [
+    { name = "Dhiraj Das", email = "dhirajdas.666@gmail.com" }
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Software Development :: Testing",
+    "Topic :: Software Development :: Quality Assurance"
+]
+dependencies = [
+    "playwright>=1.30.0"
+]
+
+[project.urls]
+Homepage = "https://www.dhirajdas.dev"
+Repository = "https://github.com/godhiraj-code/playwright-stream-monitor"

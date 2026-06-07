@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stream Test</title>
+</head>
+<body>
+    <button id="start-btn">Start Stream</button>
+    <div id="output" class="chat-bubble-latest" style="border: 1px solid #ccc; padding: 10px; margin: 10px; min-height: 50px;"></div>
+
+    <script>
+        const words = "Once upon a time in a galaxy far far away, there was an autonomous agent named Hermes that worked tirelessly to build passive income for its creator. The end.".split(" ");
+        let idx = 0;
+        let timer = null;
+
+        document.getElementById('start-btn').addEventListener('click', () => {
+            const target = document.getElementById('output');
+            target.innerText = "";
+            idx = 0;
+            
+            timer = setInterval(() => {
+                if (idx < words.length) {
+                    target.innerText += (idx === 0 ? "" : " ") + words[idx];
+                    idx++;
+                } else {
+                    clearInterval(timer);
+                }
+            }, 100);
+        });
+    </script>
+</body>
+</html>
