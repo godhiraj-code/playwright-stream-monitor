@@ -1,11 +1,12 @@
-import os
+from pathlib import Path
+
 from playwright.sync_api import sync_playwright
 from playwright_stream_monitor import StreamMonitor
 
 def test_stream_monitor_live():
     # Construct local file URL
-    html_path = os.path.abspath("C:/Users/dhira/playwright-stream-monitor/tests/stream_test.html")
-    file_url = f"file:///{html_path.replace(os.sep, '/')}"
+    html_path = Path(__file__).with_name("stream_test.html").resolve()
+    file_url = html_path.as_uri()
     
     print(f"Opening test page: {file_url}")
     

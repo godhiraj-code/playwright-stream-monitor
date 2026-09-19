@@ -89,19 +89,19 @@ class StreamMonitor:
         Returns:
             str: The final accumulated text.
         """
-        start_time = time.time()
-        last_length = -1
-        last_mutation_time = time.time()
+        start_time = time.monotonic()
+        last_text = None
+        last_mutation_time = start_time
 
-        while time.time() - start_time < timeout_sec:
-            # Get current text length from browser
+        while time.monotonic() - start_time < timeout_sec:
+            # Compare the actual text so same-length replacements count as changes.
             text = self.page.locator(self.selector).inner_text()
-            current_length = len(text)
+            now = time.monotonic()
 
-            if current_length != last_length:
-                last_length = current_length
-                last_mutation_time = time.time()
-            elif time.time() - last_mutation_time > stall_timeout_sec:
+            if text != last_text:
+                last_text = text
+                last_mutation_time = now
+            elif now - last_mutation_time > stall_timeout_sec:
                 # Stream has stopped mutating for longer than the stall threshold
                 return text
 
