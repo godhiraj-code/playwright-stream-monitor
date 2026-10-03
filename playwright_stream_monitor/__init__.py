@@ -1,5 +1,6 @@
 import time
-from playwright.sync_api import Page, Locator
+import uuid
+from playwright.sync_api import Page
 
 class StreamMonitor:
     def __init__(self, page: Page, selector: str):
@@ -12,34 +13,40 @@ class StreamMonitor:
         """
         self.page = page
         self.selector = selector
+        self._monitor_key = "__streamMonitor_" + uuid.uuid4().hex
 
     def start_monitoring(self):
         """Attaches a MutationObserver to the streaming element in the browser."""
         self.page.evaluate(
-            """(sel) => {
+            """({sel, key}) => {
                 const target = document.querySelector(sel);
                 if (!target) throw new Error(`Selector ${sel} not found`);
+
+                // Restarting the same monitor must release its old observer.
+                if (window[key] && window[key].observer) {
+                    window[key].observer.disconnect();
+                }
+                const state = window[key] = {};
                 
-                window._streamHistory = [];
-                window._streamStartTime = performance.now();
-                window._streamFirstTokenTime = null;
-                window._streamLastMutationTime = performance.now();
-                window._streamIsActive = true;
+                state.history = [];
+                state.start = performance.now();
+                state.firstToken = null;
+                state.lastMutation = state.start;
 
                 const observer = new MutationObserver((mutations) => {
-                    const text = target.innerText || target.textContent;
+                    const text = target.innerText || target.textContent || '';
                     const now = performance.now();
                     
-                    if (!window._streamFirstTokenTime && text.trim().length > 0) {
-                        window._streamFirstTokenTime = now;
+                    if (state.firstToken === null && text.trim().length > 0) {
+                        state.firstToken = now;
                     }
                     
-                    window._streamHistory.push({
+                    state.history.push({
                         timestamp: now,
                         text_length: text.length,
                         text_preview: text.slice(-20)
                     });
-                    window._streamLastMutationTime = now;
+                    state.lastMutation = now;
                 });
 
                 observer.observe(target, { 
@@ -48,32 +55,34 @@ class StreamMonitor:
                     subtree: true 
                 });
                 
-                window._streamObserverInstance = observer;
+                state.observer = observer;
             }""",
-            self.selector
+            {"sel": self.selector, "key": self._monitor_key}
         )
 
     def stop_monitoring(self) -> dict:
         """Stops the observer and returns computed streaming metrics."""
         metrics = self.page.evaluate(
-            """() => {
-                if (window._streamObserverInstance) {
-                    window._streamObserverInstance.disconnect();
-                }
+            """(key) => {
+                const state = window[key];
+                if (!state) throw new Error('Monitor has not been started or was already stopped');
+                state.observer.disconnect();
+                delete window[key];
                 
                 const now = performance.now();
-                const history = window._streamHistory || [];
-                const start = window._streamStartTime;
-                const firstToken = window._streamFirstTokenTime;
+                const history = state.history;
+                const start = state.start;
+                const firstToken = state.firstToken;
                 
                 return {
                     "total_duration_ms": now - start,
-                    "ttft_ms": firstToken ? (firstToken - start) : null,
+                    "ttft_ms": firstToken !== null ? (firstToken - start) : null,
                     "total_mutations": history.length,
-                    "stalled": (now - window._streamLastMutationTime) > 2000,
+                    "stalled": (now - state.lastMutation) > 2000,
                     "history": history
                 };
-            }"""
+            }""",
+            self._monitor_key
         )
         return metrics
 
