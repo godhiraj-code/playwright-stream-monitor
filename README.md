@@ -61,5 +61,9 @@ def test_streaming_chatbot(page: Page):
 ## Contributing
 Contributions are welcome! Please open an issue or pull request on GitHub to suggest improvements or features.
 
+## Author
+
+[Dhiraj Das](https://www.dhirajdas.dev) · [Follow @dkkkkd on X](https://x.com/dkkkkd)
+
 ## License
 MIT
