@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "playwright-stream-monitor"
-version = "1.0.0"
+version = "1.0.1"
 description = "A lightweight utility pattern to track, measure, and validate Server-Sent Events (SSE) and streaming LLM responses in Playwright test suites."
 readme = "README.md"
 requires-python = ">=3.8"
